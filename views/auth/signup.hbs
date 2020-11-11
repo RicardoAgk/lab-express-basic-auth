@@ -4,11 +4,14 @@
     Username
     <input type="text" name="username" placeholder="Your username">
   </label>
+
   <label>
     Password
     <input type="password" name="password" placeholder="Your password">
   </label>
-  <button type="submit" >Create user</button>
+
+  <button type="submit">Create user</button>
+
   {{#if errorMessage}}
     <div class="error">{{ errorMessage }}</div>
   {{/if}}

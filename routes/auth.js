@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const User = require('../models/User.model');
 const { Mongoose } = require('mongoose');
-
 router.get('/signup', (req, res) => {
   res.render('auth/signup');
 });
@@ -31,6 +30,7 @@ router.post('/signup', (req, res) => {
     });
     return;
   }
+
   User.findOne({'username': username})
     .then((user) => {
       if(user) { // user !== undefined
@@ -39,7 +39,8 @@ router.post('/signup', (req, res) => {
         });
         return;
       }
-      User.create({ username, password: hashPassword})
+
+      User.create({username, password: hashPassword})
         .then(() => {
           res.redirect('/');
         })
@@ -50,12 +51,83 @@ router.post('/signup', (req, res) => {
               errorMessage: 'Username needs to be unique'
             })
           }
-         // console.log('error', error);
-        /*  res.render('auth/signup', {
-            errorMessage: error
-          })*/
         })
     });
 });
 
-module.exports = router;
+router.get('/login', (req, res) => {
+  res.render('auth/login');
+})
+
+router.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    res.render('auth/login', {
+      errorMessage: 'Please enter both username and password'
+    });
+    return;
+  }
+  User.findOne({'username': username})
+    .then((user) => {
+      if(!user) {
+        res.render('auth/login', {
+          errorMessage: 'Invalid login'
+        })
+        //User doesn't exist on the database
+        return;
+      }
+      if (bcrypt.compareSync(password, user.password)) {
+        //Logged in sucessfully
+        req.session.currentUser = user;
+        res.redirect('/');
+        //res.render('index', { user })
+      } else {
+        //Passwords don't match
+        res.render('auth/login', {
+          errorMessage: 'Invalid login'
+        });
+      }
+    });
+  });
+
+  
+  router.get('/login', (req, res) => {
+    res.render('auth/login');
+  })
+  
+  router.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      res.render('auth/login', {
+        errorMessage: 'Please enter both username and password'
+      });
+      return;
+    }
+    User.findOne({'username': username})
+      .then((user) => {
+        if(!user) {
+          res.render('auth/login', {
+            errorMessage: 'Invalid login'
+          })
+          //User doesn't exist on the database
+          return;
+        }
+        if (bcrypt.compareSync(password, user.password)) {
+          //Logged in sucessfully
+          req.session.currentUser = user;
+          res.redirect('/');
+          //res.render('index', { user })
+        } else {
+          //Passwords don't match
+          res.render('auth/login', {
+            errorMessage: 'Invalid login'
+          });
+        }
+      });
+    });
+  router.post('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
+  })
+
+  module.exports = router;

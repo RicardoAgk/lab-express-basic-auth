@@ -1,4 +1,3 @@
-// User model here
 const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 
